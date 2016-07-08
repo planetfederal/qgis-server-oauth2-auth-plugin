@@ -8,6 +8,30 @@ authentication).
 Currently supported Authorization Services
 ------------------------------------------
 
+Generic OAuth 2
+...............
+
+Teh `base` provider is a generic OAuth 2 provider.
+
+**Required configuration**:
+
+* `OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=base`
+* `OAUTH2_CLIENT_ID=your_client_id`
+* `OAUTH2_CLIENT_SECRET=your_secret`
+* `OAUTH2_AUTHENTICATE_URL=https://your_oauth2_endpoint.com/authorize/
+* `OAUTH2_ACCESS_TOKEN_URL=https://your_oauth2_endpoint.com/oauth/token
+* `OAUTH2_SCOPE=yuor_scope`
+
+Example for **Auth0**
+
+* `OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=base`
+* `OAUTH2_CLIENT_ID=your_client_id`
+* `OAUTH2_CLIENT_SECRET=your_secret`
+* `OAUTH2_AUTHENTICATE_URL=https://your_auth0_account.auth0.com/authorize/
+* `OAUTH2_ACCESS_TOKEN_URL=https://your_auth0_account.auth0.com/oauth/token
+* `OAUTH2_SCOPE=openid`
+
+
 GithHub (OAuth 2)
 .................
 
@@ -69,8 +93,8 @@ Configuration
 
 See the file `settings.py`.
 
-The configuration variables can be set in a `.env` file or passed from
-the environment.
+The configuration variables can be set in the settings file, in an `.env` file
+or passed from the environment.
 
 .. warning::
 
@@ -97,4 +121,9 @@ and can be used to debug the plugin.
 
 Example run::
 
-     OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=github OAUTH2_CLIENT_ID=***** OAUTH2_CLIENT_SECRET=********* QGIS_SERVER_LOG_FILE=/tmp/qgis.log QGIS_SERVER_LOG_LEVEL=0 python qgis_wrapped_server.py | tee | tail -f /tmp/qgis.log
+     OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=github \
+     OAUTH2_CLIENT_ID=***** \
+     OAUTH2_CLIENT_SECRET=********* \
+     QGIS_SERVER_LOG_FILE=/tmp/qgis.log \
+     QGIS_SERVER_LOG_LEVEL=0 \
+     python qgis_wrapped_server.py | tee | tail -f /tmp/qgis.log

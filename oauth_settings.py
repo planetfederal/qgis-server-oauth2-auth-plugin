@@ -13,3 +13,7 @@ OAUTH2_AUTHORIZATION_SERVICE_PROVIDER = os.environ.get('OAUTH2_AUTHORIZATION_SER
 # OAUTH2 credentials
 OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID')
 OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET')
+# The following parameters might be defined in the provider class
+OAUTH2_AUTHENTICATE_URL = os.environ.get('OAUTH2_AUTHENTICATE_URL')
+OAUTH2_ACCESS_TOKEN_URL = os.environ.get('OAUTH2_ACCESS_TOKEN_URL')
+OAUTH2_SCOPE = os.environ.get('OAUTH2_SCOPE')

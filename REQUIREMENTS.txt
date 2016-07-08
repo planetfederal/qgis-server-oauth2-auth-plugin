@@ -1,4 +1,4 @@
 oauth2==1.9.0.post1
 python-dotenv
 # For generic oauth2
-git+https://github.com/VulcanTechnologies/oauth2lib.git
+git+https://github.com/elpaso/oauth2lib.git

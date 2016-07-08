@@ -77,11 +77,15 @@ class OAuth2FilterBase(QgsServerFilter):
 
     """
 
+    # Configuration variables
+    access_token_url = OAUTH2_ACCESS_TOKEN_URL
+    authenticate_url = OAUTH2_AUTHENTICATE_URL
+    scope = OAUTH2_SCOPE
+
     # Store request_token -> dicts of request_token information
     request_storage = Cache()
     # Store oauth_token -> dict of oauth token information
     token_storage = Cache()
-    scope = None
 
     def log(self, msg):
         QgsMessageLog.logMessage('[OAUTH2] %s' % msg)
@@ -220,8 +224,6 @@ class OAuth2FilterBase(QgsServerFilter):
                 # Remove code, and state
                 scheme, domain, path, params, query, fragment = urlparse.urlparse(url)
                 query_params = dict(urlparse.parse_qsl(query))
-                #del query_params['code']
-                #del query_params['state']
                 # Add access_token to the url
                 query_params['access_token'] = access_token
                 query = '&'.join(["%s=%s" % (k, v) for k, v in query_params.items()])
