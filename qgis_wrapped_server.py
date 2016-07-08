@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-QGIS Server HTTP wrapper
+QGIS Server HTTP wrapper (OAuth 2 edition)
+
+This is a slightly modified version of a generic QGIS Server test script,
+because it also loads the OAuth plugin and filter specified in the env
+var OAUTH2_AUTHORIZATION_SERVICE_PROVIDER
 
 This script launches a QGIS Server listening on port 8081 or on the port
 specified on the environment variable QGIS_SERVER_DEFAULT_PORT
+
 
 .. note:: This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,16 +38,16 @@ except KeyError:
 
 
 qgs_server = QgsServer()
+
+# OAuth 2 plugin loading start
 serverIface = qgs_server.serverInterface()
-
-
 from oauth_settings import *
 import importlib
 module = importlib.import_module('filters.%s' % OAUTH2_AUTHORIZATION_SERVICE_PROVIDER)
-klass_name = 'OAuthFilter%s' % OAUTH2_AUTHORIZATION_SERVICE_PROVIDER.title()
+klass_name = 'OAuth2Filter%s' % OAUTH2_AUTHORIZATION_SERVICE_PROVIDER.title()
 klass = getattr(module, klass_name)
 serverIface.registerFilter(klass(serverIface), 100)
-
+# OAuth 2 plugin loading End
 
 class Handler(BaseHTTPRequestHandler):
 

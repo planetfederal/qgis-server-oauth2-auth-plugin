@@ -25,7 +25,7 @@ class OAuthServer:
         # Get selected filter from settings
         try:
             module = importlib.import_module('filters.%s' % OAUTH2_AUTHORIZATION_SERVICE_PROVIDER)
-            klass_name = '%sOAuthFilter' % OAUTH2_AUTHORIZATION_SERVICE_PROVIDER.title()
+            klass_name = 'OAuth2Filter%s' % OAUTH2_AUTHORIZATION_SERVICE_PROVIDER.title()
             klass = getattr(module, klass_name)
             serverIface.registerFilter(klass(serverIface), 100)
         except (ImportError, AttributeError), e:

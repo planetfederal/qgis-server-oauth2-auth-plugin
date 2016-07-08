@@ -1,7 +1,10 @@
 # Load the env vars fomr .env files
 import os
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
+try:
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv())
+except ImportError:
+    raise Exception("Please install the required Python packages in REQUIREMENTS.txt")
 
 # Authorization Service Provider (a suitable class must exist in filters)
 # default to Twitter

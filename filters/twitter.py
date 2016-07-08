@@ -20,23 +20,16 @@ import oauth2 as oauth
 import urlparse
 from urllib2 import quote
 
-from .base import OAuthFilterBase, OAuthException, Cache, OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET
+from .base import OAuth2FilterBase, OAuthException, OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET
 
 request_token_url = 'https://api.twitter.com/oauth/request_token'
 access_token_url = 'https://api.twitter.com/oauth/access_token'
 # This is the slightly different URL used to authenticate/authorize.
 authenticate_url = 'https://api.twitter.com/oauth/authenticate'
 
-class OAuthFilterTwitter(OAuthFilterBase):
+class OAuth2FilterTwitter(OAuth2FilterBase):
 
-    # Store request_token -> dicts of request_token information
-    request_storage = Cache()
-    # Store oauth_token -> dict of oauth token information
-    token_storage = Cache()
     consumer = oauth.Consumer(OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET)
-
-    def __init__(self, iface):
-        super(OAuthFilterTwitter, self).__init__(iface)
 
     def login(self):
         try:
