@@ -237,7 +237,6 @@ class OAuth2FilterBase(QgsServerFilter):
                 access_token, real_callback_url = self.authenticated(request_token, verifier_token)
                 # Redirect
                 url = real_callback_url
-                # Remove code, and state
                 scheme, domain, path, params, query, fragment = urlparse.urlparse(url)
                 query_params = dict(urlparse.parse_qsl(query))
                 # Add access_token to the url
@@ -276,7 +275,7 @@ class OAuth2FilterBase(QgsServerFilter):
 
     def responseComplete(self):
         request = self.serverInterface().requestHandler()
-        # REQUEST is OAUTH2 and no redirect set: we need to login
+        # REQUEST is OAUTH2: we need to login
         if request.parameterMap().get('REQUEST') == 'OAUTH2' and not self.redirect_url:
             try:
                 # Check if the auth was denied
