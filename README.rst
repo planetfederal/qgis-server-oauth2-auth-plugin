@@ -5,31 +5,44 @@ This is an highly experimental proof-of-concept plugin for *QGIS Server*
 that protects the server using *OAuth2* for authorization (and delegated
 authentication).
 
+SECURITY WARNING:
+
+The `access_token` is cached in-memory in the server plugin and does not
+expire.
+
+
 Currently supported Authorization Services
 ------------------------------------------
 
 Generic OAuth 2
 ...............
 
-Teh `base` provider is a generic OAuth 2 provider.
+The `base` provider is a generic OAuth 2 provider.
 
 **Required configuration**:
 
 * `OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=base`
 * `OAUTH2_CLIENT_ID=your_client_id`
 * `OAUTH2_CLIENT_SECRET=your_secret`
-* `OAUTH2_AUTHENTICATE_URL=https://your_oauth2_endpoint.com/authorize/
-* `OAUTH2_ACCESS_TOKEN_URL=https://your_oauth2_endpoint.com/oauth/token
+* `OAUTH2_AUTHENTICATE_URL=https://your_oauth2_endpoint.com/authorize/`
+* `OAUTH2_ACCESS_TOKEN_URL=https://your_oauth2_endpoint.com/oauth/token`
 * `OAUTH2_SCOPE=yuor_scope`
 
-Example for **Auth0**
+Auth0 (OAuth 2)
+.................
 
-* `OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=base`
+GitHub offers a *pure* implementation of **OAuth 2** and supports
+**Authorization Code Grant** flow, the `access_token` is sent back to the
+User-Agent in the query string and it's used as a session identifier.
+
+Additionally, this provider supports verification of `access_token` obtained
+through another client.
+
+**Required configuration**:
+
+* `OAUTH2_AUTHORIZATION_SERVICE_PROVIDER=auth0`
 * `OAUTH2_CLIENT_ID=your_client_id`
 * `OAUTH2_CLIENT_SECRET=your_secret`
-* `OAUTH2_AUTHENTICATE_URL=https://your_auth0_account.auth0.com/authorize/
-* `OAUTH2_ACCESS_TOKEN_URL=https://your_auth0_account.auth0.com/oauth/token
-* `OAUTH2_SCOPE=openid`
 
 
 GithHub (OAuth 2)
@@ -37,8 +50,7 @@ GithHub (OAuth 2)
 
 GitHub offers a *pure* implementation of **OAuth 2** and supports
 **Authorization Code Grant** flow, the `access_token` is sent back to the
-User-Agent in the query string and it's used as a session identifier..
-
+User-Agent in the query string and it's used as a session identifier.
 
 **Required configuration**:
 
@@ -54,6 +66,10 @@ Google (OAuth 2)
 Google also offers a *pure* implementation of **OAuth 2** and supports
 **Authorization Code Grant** flow, the `access_token` is sent back to the
 User-Agent in the query string and it's used as a session identifier..
+
+Additionally, this provider supports verification of `access_token` obtained
+through another client.
+
 
 **Required configuration**:
 
@@ -76,8 +92,6 @@ Twitter Authorization Service supports **Authorization Code Grant** flow, the
 `access_token` is sent back to the User-Agent in the query string and it's
 used as a session identifier.
 
-The `access_token` is cached in-memory in the server plugin and does not
-expire.
 
 **Required configuration**:
 
@@ -105,7 +119,7 @@ Installation
 
 If you just want to test this plugin, you can run QGIS Server from the console
 and you do not need to install it in a running web server setup, see the next
-paragraph for the details details.
+paragraph for the details.
 
 Some additional Python packages must be installed to run the plugin, see
 the list of required packages in `REQUIREMENTS.txt` and install them

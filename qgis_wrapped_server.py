@@ -35,6 +35,11 @@ try:
     QGIS_SERVER_DEFAULT_PORT = int(os.environ['QGIS_SERVER_DEFAULT_PORT'])
 except KeyError:
     QGIS_SERVER_DEFAULT_PORT = 8081
+try:
+    QGIS_SERVER_DEFAULT_SERVERNAME = os.environ['QGIS_SERVER_DEFAULT_SERVERNAME']
+except KeyError:
+    QGIS_SERVER_DEFAULT_SERVERNAME = 'localhost'
+
 
 
 qgs_server = QgsServer()
@@ -58,6 +63,7 @@ class Handler(BaseHTTPRequestHandler):
         # CGI vars:
         for k, v in self.headers.dict.items():
             qgs_server.putenv('HTTP_%s' % k.replace(' ', '-').replace('-', '_').replace(' ', '-').upper(), v)
+            print("Settings %s: %s" % ('HTTP_%s' % k.replace(' ', '-').replace('-', '_').replace(' ', '-').upper(), v))
         qgs_server.putenv('SERVER_PORT', str(self.server.server_port))
         qgs_server.putenv('SERVER_NAME', self.server.server_name)
         qgs_server.putenv('REQUEST_URI', self.path)
@@ -84,7 +90,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server = HTTPServer(('localhost', QGIS_SERVER_DEFAULT_PORT), Handler)
-    print('Starting server on localhost:%s, use <Ctrl-C> to stop' %
-          QGIS_SERVER_DEFAULT_PORT)
+    server = HTTPServer((QGIS_SERVER_DEFAULT_SERVERNAME, QGIS_SERVER_DEFAULT_PORT), Handler)
+    print('Starting server on %s:%s, use <Ctrl-C> to stop' % (QGIS_SERVER_DEFAULT_SERVERNAME,
+          QGIS_SERVER_DEFAULT_PORT))
     server.serve_forever()

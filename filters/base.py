@@ -80,6 +80,7 @@ class OAuth2FilterBase(QgsServerFilter):
     # Configuration variables
     access_token_url = OAUTH2_ACCESS_TOKEN_URL
     authenticate_url = OAUTH2_AUTHENTICATE_URL
+
     scope = OAUTH2_SCOPE
 
     # Store request_token -> dicts of request_token information
@@ -182,6 +183,14 @@ class OAuth2FilterBase(QgsServerFilter):
         request.removeParameter('TOKEN_TYPE')
         return access_token['access_token'], real_callback_url
 
+    def verify_access_token(self, access_token):
+        """
+        This is not implemented by all providers (Google does)
+        The RFC is: https://tools.ietf.org/html/rfc7662
+        Default implementation return False
+        """
+        return False
+
     def get_access_token(self):
         """
         Implements the logic to obtain a valid access_token.
@@ -191,6 +200,8 @@ class OAuth2FilterBase(QgsServerFilter):
         params = request.parameterMap()
         # 1: search in the bearer
         auth_header = params.get('HTTP_AUTHORIZATION', '')
+        if not auth_header:
+            auth_header = self.serverInterface().getEnv('HTTP_AUTHORIZATION')
         if auth_header.find('Bearer ') == 0:
             access_token = auth_header[6:]
             self.log('Got HTTP_AUTHORIZATION bearer: %s' % access_token)
@@ -199,7 +210,12 @@ class OAuth2FilterBase(QgsServerFilter):
                 self.log('HTTP_AUTHORIZATION bearer is verified!')
                 return access_token  # is valid!
             else:
-                self.log('HTTP_AUTHORIZATION bearer is NOT verified!')
+                self.log('HTTP_AUTHORIZATION bearer is NOT verified [1]!')
+                # Check verify_url
+                profile = self.verify_access_token(access_token)
+                if profile:
+                    self.token_storage[access_token] = profile
+                    return access_token  # is valid!
                 raise OAuthException('access_token in request is NOT verified!')
         # 2: search in the query string ...
         #    or search in the POST body
@@ -209,7 +225,7 @@ class OAuth2FilterBase(QgsServerFilter):
                 self.log('access_token in request is verified!')
                 return access_token  # is valid!
             else:
-                self.log('access_token in request is NOT verified!')
+                self.log('access_token in request is NOT verified [2]!')
                 # TODO: re-validate the token against Github endpoint
                 raise OAuthException('access_token in request is NOT verified!')
         # 4: Search for token from verify step
@@ -241,6 +257,9 @@ class OAuth2FilterBase(QgsServerFilter):
         self.exception = None
         self.error_code = '401 Unauthorized'
         request = self.serverInterface().requestHandler()
+        params = request.parameterMap()
+        for k, v in params.items():
+            self.log('Request parameters: %s: %s' % (k, v))
         # Check settings:
         if not OAUTH2_CLIENT_ID or not OAUTH2_CLIENT_SECRET:
             self.exception = OAuthException('Configuration error: OAUTH2_CLIENT_ID or OAUTH2_CLIENT_SECRET are not set!')
