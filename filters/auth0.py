@@ -14,7 +14,6 @@ __date__ = '05/15/2016'
 __revision__ = '$Format:%H$'
 
 
-import urlparse
 import requests
 import json
 
@@ -22,21 +21,16 @@ from .base import OAuth2FilterBase
 from oauth_settings import *
 
 class OAuth2FilterAuth0(OAuth2FilterBase):
-    """Github endpoints"""
-    access_token_url = 'https://itopen.eu.auth0.com/oauth/token'
-    # This is the slightly different URL used to authenticate/authorize.
-    authenticate_url = 'https://itopen.eu.auth0.com/authorize/'
-    # Google needs a scope
-    scope = 'openid'
-    # Verify the token
-    verify_url = 'https://itopen.eu.auth0.com/userinfo'
 
+    verify_url = OAUTH2_VERIFY_URL
 
     def verify_access_token(self, access_token):
         """
-        This is not implemented by all providers (Google does)
+        This is not implemented by all providers (Google and auth0 do)
         Returns the user profile as returned by the verify endpoint
         """
+        if not self.verify_url:
+            return False
         response = requests.get(self.verify_url, headers={'Authorization', 'Bearer %s' % access_token})
         # Invalid token returns 400
         if response.status_code != 200:

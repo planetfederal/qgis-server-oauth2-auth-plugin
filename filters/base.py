@@ -185,9 +185,10 @@ class OAuth2FilterBase(QgsServerFilter):
 
     def verify_access_token(self, access_token):
         """
-        This is not implemented by all providers (Google does)
+        This is not implemented by all providers (Google and Auth0 do)
         The RFC is: https://tools.ietf.org/html/rfc7662
         Default implementation return False
+        OAUTH2_VERIFY_URL env var can be used to specify the verify URL
         """
         return False
 
@@ -198,6 +199,7 @@ class OAuth2FilterBase(QgsServerFilter):
         """
         request = self.serverInterface().requestHandler()
         params = request.parameterMap()
+        access_token = None
         # 1: search in the bearer
         auth_header = params.get('HTTP_AUTHORIZATION', '')
         if not auth_header:
@@ -205,29 +207,26 @@ class OAuth2FilterBase(QgsServerFilter):
         if auth_header.find('Bearer ') == 0:
             access_token = auth_header[6:]
             self.log('Got HTTP_AUTHORIZATION bearer: %s' % access_token)
+        # 2: search in the query string ...
+        #    or search in the POST body
+        if not access_token:
+            access_token = params.get('ACCESS_TOKEN', None)
+            if access_token:
+                self.log('Got access_token from requests: %s' % access_token)
+        # 3: verify the access_token we have found in header or request
+        if access_token:
             # Search in cache
             if self.token_storage.get(access_token):
-                self.log('HTTP_AUTHORIZATION bearer is verified!')
+                self.log('access_token is verified!')
                 return access_token  # is valid!
             else:
-                self.log('HTTP_AUTHORIZATION bearer is NOT verified [1]!')
+                self.log('access_token is NOT verified [1]!')
                 # Check verify_url
                 profile = self.verify_access_token(access_token)
                 if profile:
                     self.token_storage[access_token] = profile
                     return access_token  # is valid!
-                raise OAuthException('access_token in request is NOT verified!')
-        # 2: search in the query string ...
-        #    or search in the POST body
-        access_token = params.get('ACCESS_TOKEN', None)
-        if access_token is not None:
-            if self.token_storage.get(access_token):
-                self.log('access_token in request is verified!')
-                return access_token  # is valid!
-            else:
-                self.log('access_token in request is NOT verified [2]!')
-                # TODO: re-validate the token against Github endpoint
-                raise OAuthException('access_token in request is NOT verified!')
+                raise OAuthException('access_token is NOT verified!')
         # 4: Search for token from verify step
         #    NOTE: this is not the access_token but a request_token!
         verifier_token = params.get('CODE', None)
