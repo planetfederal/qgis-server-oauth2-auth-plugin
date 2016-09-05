@@ -51,7 +51,7 @@ class FakeOAuthServer:
 
     # run
     def about(self):
-        QMessageBox.information(self.iface.mainWindow(), QCoreApplication.translate(' OAuth Server plugin', " OAuth Server plugin"), QCoreApplication.translate(' OAuth Server plugin', " OAuth Server plugin is a simple OAuth implementation for QGIS Server."))
+        QMessageBox.information(self.iface.mainWindow(), QCoreApplication.translate(' OAuth Server plugin', " OAuth Server plugin"), QCoreApplication.translate(' OAuth Server plugin', " OAuth Server plugin is a simple OAuth implementation for QGIS Server. See the <a href=\"https://github.com/boundlessgeo/qgis-server-oauth2-auth-plugin/blob/master/README.rst\">README</a> for more information."))
 
 
 

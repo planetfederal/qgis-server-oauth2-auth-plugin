@@ -5,7 +5,7 @@ This is an highly experimental proof-of-concept plugin for *QGIS Server*
 that protects the server using *OAuth2* for authorization (and delegated
 authentication).
 
-** SECURITY WARNING: **
+**SECURITY WARNING:**
 
 The `access_token` is cached in-memory in the server plugin and does not
 expire.
@@ -137,10 +137,22 @@ and you do not need to install it in a running web server setup, see the next
 paragraph for the details.
 
 Some additional Python packages must be installed to run the plugin, see
-the list of required packages in `REQUIREMENTS.txt` and install them
+the list of required packages in `requirements.txt` and install them
 in your virtualenv with::
 
-    pip install -r REQUIREMENTS.txt
+    pip install -r requirements.txt
+
+In the main plugin folder you can also find a `paver` script that can do the
+setup work automatically and download/install all required dependencies
+and store them in an egg file in the `ext-libs` folder, if you choose this
+installation method, you do not need to run `pip install` manually as explained
+above.
+
+To setup the plugin with paver, just run::
+
+    paver setup
+
+
 
 Testing
 -------

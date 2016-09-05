@@ -1,3 +1,5 @@
 python-dotenv
-# For generic oauth2
 git+https://github.com/elpaso/oauth2lib.git
+requests
+
+# test requirements

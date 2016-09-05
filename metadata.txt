@@ -4,8 +4,8 @@ qgisMinimumVersion=2.5
 qgisMaximumVersion=2.99
 description=This is a simple OAuth plugin for the QGIS MapServer
 version=version 1.1
-author=Alessandro Pasotti (ItOpen)
-email=apasotti@gmail.com
+author=Alessandro Pasotti (Boundless)
+email=apasotti@boundlessgeo.com
 ; if True it's a server plugin
 server=True
 
@@ -13,6 +13,9 @@ category=server
 
 experimental=True
 
-about=This is a test plugin
+about=This is an highly experimental proof-of-concept plugin for QGIS Server
+      that protects the server using OAuth2 for authorization (and delegated
+      authentication).
+
 
 icon=icons/oauth_logo_final.svg
