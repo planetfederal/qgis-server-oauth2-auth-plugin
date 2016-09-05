@@ -1,5 +1,8 @@
 # Load the env vars fomr .env files
 import os
+import site
+site.addsitedir(os.path.abspath(os.path.dirname(__file__) + '/ext-libs'))
+
 try:
     from dotenv import load_dotenv, find_dotenv
     load_dotenv(find_dotenv())

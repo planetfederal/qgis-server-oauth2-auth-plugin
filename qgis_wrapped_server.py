@@ -31,6 +31,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from qgis.server import QgsServer
 
+
 try:
     QGIS_SERVER_DEFAULT_PORT = int(os.environ['QGIS_SERVER_DEFAULT_PORT'])
 except KeyError:
