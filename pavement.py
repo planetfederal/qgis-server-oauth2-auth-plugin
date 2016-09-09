@@ -26,7 +26,10 @@ options(
             'coverage*',
             'nose*',
             '*.pyc',
-            'gisdata'
+            'gisdata',
+            '.git',
+            '.env',
+            '*.sh',
         ],
         # skip certain files inadvertently found by exclude pattern globbing
         skip_exclude = ['coverage.xsd']
