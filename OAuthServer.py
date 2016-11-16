@@ -20,6 +20,9 @@ from PyQt4.QtGui import *
 from oauth_settings import *
 import importlib
 
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+
 class OAuthServer:
     def __init__(self, serverIface):
         # Get selected filter from settings
