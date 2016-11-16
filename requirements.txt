@@ -1,5 +1,5 @@
 python-dotenv
-git+https://github.com/elpaso/oauth2lib.git
+oauth2
 requests
 
 # test requirements
