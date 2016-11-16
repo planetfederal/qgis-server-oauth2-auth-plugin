@@ -16,6 +16,7 @@ __revision__ = '$Format:%H$'
 from qgis.server import *
 from qgis.core import *
 
+import oauth2 as oauth
 import urlparse
 from urllib2 import quote
 

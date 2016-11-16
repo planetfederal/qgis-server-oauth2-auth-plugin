@@ -1,4 +1,5 @@
 python-dotenv
+oauth2
 httplib2
 requests
 git+https://github.com/elpaso/oauth2lib.git
