@@ -167,7 +167,7 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
             # Try to get a valid access_token
             try:
                 self.access_token = self.get_access_token()
-            except OAuthException, e:
+            except Exception as e:
                 self.exception = e
             if self.access_token is None:  # We need to login: skip the core server processing
                 request.setParameter('REQUEST', 'OAUTH2')
