@@ -29,7 +29,7 @@ class OAuthServer:
             klass = getattr(module, klass_name)
             serverIface.registerFilter(klass(serverIface), 100)
         except (ImportError, AttributeError), e:
-            QgsMessageLog.logMessage('[OAUTH2] ERROR importing class %s %s' % (klass_name, e))
+            QgsMessageLog.logMessage('[OAUTH2] ERROR importing provider %s %s' % (OAUTH2_AUTHORIZATION_SERVICE_PROVIDER, e))
         super(OAuthServer, self).__init__(serverIface)
 
 class FakeOAuthServer:
