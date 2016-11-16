@@ -35,7 +35,7 @@ The `base` provider is a generic OAuth 2 provider.
 * `OAUTH2_CLIENT_SECRET=your_secret`
 * `OAUTH2_AUTHENTICATE_URL=https://your_oauth2_endpoint.com/authorize/`
 * `OAUTH2_ACCESS_TOKEN_URL=https://your_oauth2_endpoint.com/oauth/token`
-* `OAUTH2_SCOPE=yuor_scope`
+* `OAUTH2_SCOPE=your_scope`
 
 Auth0 (OAuth 2)
 .................
