@@ -40,7 +40,7 @@ The `base` provider is a generic OAuth 2 provider.
 Auth0 (OAuth 2)
 .................
 
-GitHub offers a *pure* implementation of **OAuth 2** and supports
+Auth0 offers a *pure* implementation of **OAuth 2** and supports
 **Authorization Code Grant** flow, the `access_token` is sent back to the
 User-Agent in the query string and it's used as a session identifier.
 
