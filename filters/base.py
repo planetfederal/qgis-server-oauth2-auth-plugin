@@ -17,7 +17,7 @@ from qgis.server import *
 from qgis.core import *
 
 import urlparse
-import time
+from time import time
 import hashlib
 
 try:
@@ -27,38 +27,109 @@ except ImportError:
 
 from oauth_settings import *
 
-# Session management: very naive cache implementation
-from collections import OrderedDict
-from threading import Lock
+import os
+import errno
+import sqlite3
 
-class Cache:
-    def __init__(self, size=100):
-        if int(size) < 1:
-            raise AttributeError('size < 1 or not a number')
-        self.size = size
-        self.dict = OrderedDict()
-        self.lock = Lock()
+from cPickle import loads, dumps
 
-    def __getitem__(self, key):
-        with self.lock:
-            return self.dict[key]
+try:
+    from thread import get_ident
+except ImportError:
+    from dummy_thread import get_ident
+from werkzeug.contrib.cache import BaseCache
 
-    def __setitem__(self, key, value):
-        with self.lock:
-            while len(self.dict) >= self.size:
-                self.dict.popitem(last=False)
-            self.dict[key] = value
+class SqliteCache(BaseCache):
+    _create_sql = (
+            'CREATE TABLE IF NOT EXISTS bucket '
+            '('
+            '  key TEXT PRIMARY KEY,'
+            '  val BLOB,'
+            '  exp FLOAT'
+            ')'
+            )
+    _get_sql = 'SELECT val, exp FROM bucket WHERE key = ?'
+    _del_sql = 'DELETE FROM bucket WHERE key = ?'
+    _set_sql = 'REPLACE INTO bucket (key, val, exp) VALUES (?, ?, ?)'
+    _add_sql = 'INSERT INTO bucket (key, val, exp) VALUES (?, ?, ?)'
+
+    def __init__(self, path, default_timeout=300):
+        self.path = os.path.abspath(path)
+        try:
+            os.mkdir(self.path)
+        except OSError, e:
+            if e.errno != errno.EEXIST or not os.path.isdir(self.path):
+                raise
+        self.default_timeout = default_timeout
+        self.connection_cache = {}
+
+    def _get_conn(self, key):
+        key = str(dumps(key, 0))
+        t_id = get_ident()
+        if t_id not in self.connection_cache:
+            self.connection_cache[t_id] = {}
+        if key not in self.connection_cache[t_id]:
+            bucket_name = str(hash(key))
+            bucket_path = os.path.join(self.path, bucket_name)
+            conn = sqlite3.Connection(bucket_path, timeout=60)
+            with conn:
+                conn.execute(self._create_sql)
+            self.connection_cache[t_id][key] = conn
+        return self.connection_cache[t_id][key]
 
     def __delitem__(self, key):
-        with self.lock:
-            del self.dict[key]
+        key = str(key)
+        self.delete(key)
 
-    def get(self, key, default=None):
-        try:
-            return self[key]
-        except KeyError:
-            return default
+    def __getitem__(self, key):
+        val = self.get(key)
+        if val is None:
+            raise KeyError
+        return val
 
+    def __setitem__(self, key, value):
+        return self.set(key, value)
+
+    def get(self, key):
+        key = str(key)
+        rv = None
+        with self._get_conn(key) as conn:
+            for row in conn.execute(self._get_sql, (key,)):
+                expire = row[1]
+                if expire > time():
+                    rv = loads(str(row[0]))
+                break
+        return rv
+
+    def delete(self, key):
+        key = str(key)
+        with self._get_conn(key) as conn:
+            conn.execute(self._del_sql, (key,))
+
+    def set(self, key, value, timeout=None):
+        key = str(key)
+        if not timeout:
+            timeout = self.default_timeout
+        value = buffer(dumps(value, 2))
+        expire = time() + timeout
+        with self._get_conn(key) as conn:
+            conn.execute(self._set_sql, (key, value, expire))
+
+    def add(self, key, value, timeout=None):
+        key = str(key)
+        if not timeout:
+            timeout = self.default_timeout
+        expire = time() + timeout
+        value = buffer(dumps(value, 2))
+        with self._get_conn(key) as conn:
+            try:
+                conn.execute(self._add_sql, (key, value, expire))
+            except sqlite3.IntegrityError:
+                pass
+
+    def clear(self):
+        for bucket in os.listdir(self.path):
+            os.unlink(os.path.join(self.path, bucket))
 
 class OAuthException(Exception):
     pass
@@ -84,9 +155,9 @@ class OAuth2FilterBase(QgsServerFilter):
     scope = OAUTH2_SCOPE
 
     # Store request_token -> dicts of request_token information
-    request_storage = Cache()
+    request_storage = SqliteCache('/tmp/request_storage.db')
     # Store oauth_token -> dict of oauth token information
-    token_storage = Cache()
+    token_storage = SqliteCache('/tmp/token_storage.db')
 
     def log(self, msg):
         QgsMessageLog.logMessage('[OAUTH2] %s' % msg)
@@ -130,7 +201,7 @@ class OAuth2FilterBase(QgsServerFilter):
             request_token = self.request_storage['request_token']
         except KeyError:
             # Step 1. Get (build) an authorization code
-            request_token = hashlib.md5(str(time.time())).hexdigest()
+            request_token = hashlib.md5(str(time())).hexdigest()
             # Step 2. Store the request token and the current URL in a session for later use.
             self.request_storage[request_token] = self.get_current_url()
         # Step 3. Redirect the user to the authentication URL.

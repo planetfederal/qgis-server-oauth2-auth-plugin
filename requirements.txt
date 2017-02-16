@@ -1,4 +1,5 @@
 python-dotenv
+werkzeug
 httplib2
 oauth2
 requests

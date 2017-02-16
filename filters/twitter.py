@@ -32,24 +32,21 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
     consumer = oauth.Consumer(OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET)
 
     def login(self):
-        try:
-            request_token = self.request_storage['request_token']
-        except KeyError:
-            # Step 1. Get a request token from Twitter.
-            callback_url = self.get_current_url()
-            url = "%s?oauth_callback=%s" % (request_token_url, quote(callback_url))
-            self.log('Calling login %s' % url)
-            client = oauth.Client(self.consumer)
-            resp, content = client.request(url, "GET")
-            self.log('Got response: %s' % resp )
-            self.log('Got content: %s' % content )
-            if resp['status'] != '200':
-                raise OAuthException("Invalid response from OAuth endpoint.")
-            # Step 2. Store the request token in a session for later use.
-            request_token = dict(urlparse.parse_qsl(content))
-            if request_token['oauth_callback_confirmed']  != 'true':
-                raise OAuthException("Invalid callback.")
-            self.request_storage[request_token['oauth_token']] = request_token
+        # Step 1. Get a request token from Twitter.
+        callback_url = self.get_current_url()
+        url = "%s?oauth_callback=%s" % (request_token_url, quote(callback_url))
+        self.log('Calling login %s' % url)
+        client = oauth.Client(self.consumer)
+        resp, content = client.request(url, "GET")
+        self.log('login() Got response: %s' % resp )
+        self.log('login() Got content: %s' % content )
+        if resp['status'] != '200':
+            raise OAuthException("login() Invalid response from OAuth endpoint.")
+        # Step 2. Store the request token in a session for later use.
+        request_token = dict(urlparse.parse_qsl(content))
+        if request_token['oauth_callback_confirmed']  != 'true':
+            raise OAuthException("login() Invalid callback.")
+        self.request_storage[request_token['oauth_token']] = request_token
         # Step 3. Redirect the user to the authentication URL.
         self.redirect_url = "%s?oauth_token=%s" % (authenticate_url, request_token['oauth_token'])
 
@@ -68,11 +65,11 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
         client = oauth.Client(self.consumer, token)
 
         # Step 2. Request the authorized access token from Twitter.
-        self.log('Calling authenticated %s' % access_token_url)
+        self.log('authenticated() Calling authenticated %s' % access_token_url)
         resp, content = client.request(access_token_url, "GET")
         if resp['status'] != '200':
             print content
-            raise OAuthException("Invalid response from OAuth endpoint.")
+            raise OAuthException("authenticated() Invalid response from OAuth endpoint.")
         """
         This is what you'll get back from Twitter. Note that it includes the
         user's user_id and screen_name.
@@ -91,7 +88,7 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
         del self.request_storage[request_token]
         access_token = dict(urlparse.parse_qsl(content))
         self.token_storage[access_token['oauth_token']] = access_token
-        self.log('authenticated() Storing access_token %s' % access_token)
+        self.log('authenticated() Storing access_token [%s] %s' % (access_token['oauth_token'], access_token))
         # Clear the parameterMap
         request.removeParameter('OAUTH_TOKEN')
         request.removeParameter('OAUTH_VERIFIER')
@@ -108,25 +105,25 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
         auth_header = params.get('HTTP_AUTHORIZATION', '')
         if auth_header.find('Bearer ') == 0:
             access_token = auth_header[6:]
-            self.log('Got HTTP_AUTHORIZATION bearer: %s' % access_token)
+            self.log('get_access_token() Got HTTP_AUTHORIZATION bearer: %s' % access_token)
             # Search in cache
             if self.token_storage.get(access_token):
-                self.log('HTTP_AUTHORIZATION bearer is verified!')
+                self.log('get_access_token() HTTP_AUTHORIZATION bearer is verified!')
                 return access_token  # is valid!
             else:
-                self.log('HTTP_AUTHORIZATION bearer is NOT verified!')
-                raise OAuthException('access_token in request is NOT verified!')
+                self.log('get_access_token() HTTP_AUTHORIZATION bearer is NOT verified!')
+                raise OAuthException('access_token in request is NOT verified! %s' % access_token)
         # 2: search in the query string ...
         #    or search in the POST body
         access_token = params.get('ACCESS_TOKEN', None)
         if access_token is not None:
             if self.token_storage.get(access_token):
-                self.log('access_token in request is verified!')
+                self.log('get_access_token() access_token in request is verified!')
                 return access_token  # is valid!
             else:
-                self.log('access_token in request is NOT verified!')
+                self.log('get_access_token() access_token in request is NOT verified! %s' % access_token)
                 # TODO: re-validate the token against Twitter endpoint
-                raise OAuthException('access_token in request is NOT verified!')
+                raise OAuthException('access_token in request is NOT verified!! %s' % access_token)
         # 4: Search for token from verify step
         #    NOTE: this is not the access_token but a request_token!
         request_token = params.get('OAUTH_TOKEN', None)
@@ -147,9 +144,9 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
                 url = urlparse.urlunparse((scheme, domain, path, params, query, fragment))
                 self.redirect_url = url
                 return None
-            except Exception, e:
-                self.log('Cannot verify access_token: %s' % e)
-                raise OAuthException('Cannot verify access_token!')
+            except Exception as e:
+                self.log('get_access_token() Cannot verify access_token: %s' % e)
+                raise OAuthException('get_access_token() Cannot verify access_token!')
         return None
 
     def requestReady(self):
@@ -181,7 +178,7 @@ class OAuth2FilterTwitter(OAuth2FilterBase):
                 if request.parameterMap().get('DENIED'):
                     raise OAuthException('Authorization denied by the user!')
                 self.login()
-            except OAuthException, e:
+            except OAuthException as e:
                 # Set an error
                 self.exception = e
         # Handle redirects, can be set by login() or authenticated()
