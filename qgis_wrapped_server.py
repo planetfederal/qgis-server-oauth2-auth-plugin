@@ -42,7 +42,6 @@ except KeyError:
     QGIS_SERVER_DEFAULT_SERVERNAME = 'localhost'
 
 
-
 qgs_server = QgsServer()
 
 # OAuth 2 plugin loading start
@@ -55,6 +54,7 @@ klass = getattr(module, klass_name)
 serverIface.registerFilter(klass(serverIface), 100)
 # OAuth 2 plugin loading End
 
+
 class Handler(BaseHTTPRequestHandler):
 
     def __init__(self, request, client_address, server):
@@ -64,7 +64,7 @@ class Handler(BaseHTTPRequestHandler):
         # CGI vars:
         for k, v in self.headers.dict.items():
             qgs_server.putenv('HTTP_%s' % k.replace(' ', '-').replace('-', '_').replace(' ', '-').upper(), v)
-            print("Settings %s: %s" % ('HTTP_%s' % k.replace(' ', '-').replace('-', '_').replace(' ', '-').upper(), v))
+            print("Environment %s: %s" % ('HTTP_%s' % k.replace(' ', '-').replace('-', '_').replace(' ', '-').upper(), v))
         qgs_server.putenv('SERVER_PORT', str(self.server.server_port))
         qgs_server.putenv('SERVER_NAME', self.server.server_name)
         qgs_server.putenv('REQUEST_URI', self.path)

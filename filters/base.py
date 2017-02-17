@@ -53,7 +53,7 @@ class SqliteCache(BaseCache):
     _set_sql = 'REPLACE INTO bucket (key, val, exp) VALUES (?, ?, ?)'
     _add_sql = 'INSERT INTO bucket (key, val, exp) VALUES (?, ?, ?)'
 
-    def __init__(self, path, default_timeout=300):
+    def __init__(self, path, default_timeout=3600):
         self.path = os.path.abspath(path)
         try:
             os.mkdir(self.path)
@@ -155,9 +155,9 @@ class OAuth2FilterBase(QgsServerFilter):
     scope = OAUTH2_SCOPE
 
     # Store request_token -> dicts of request_token information
-    request_storage = SqliteCache('/tmp/request_storage.db')
+    request_storage = SqliteCache('/tmp/outh2_request_storage')
     # Store oauth_token -> dict of oauth token information
-    token_storage = SqliteCache('/tmp/token_storage.db')
+    token_storage = SqliteCache('/tmp/outh2_token_storage')
 
     def log(self, msg):
         QgsMessageLog.logMessage('[OAUTH2] %s' % msg)
@@ -205,7 +205,9 @@ class OAuth2FilterBase(QgsServerFilter):
             # Step 2. Store the request token and the current URL in a session for later use.
             self.request_storage[request_token] = self.get_current_url()
         # Step 3. Redirect the user to the authentication URL.
-        client = Client(OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET,  self.get_callback_url(), self.authenticate_url, self.access_token_url)
+        client = Client(OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET,
+                        self.get_callback_url(), self.authenticate_url,
+                        self.access_token_url)
         self.redirect_url = client.get_authorization_code_uri(state=request_token)
         if self.scope is not None:
             self.redirect_url += '&scope=%s' % self.scope
